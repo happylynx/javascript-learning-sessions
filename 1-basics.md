@@ -121,7 +121,7 @@ BigInt('-1_024')
   0b1101 //13
   ```
 * special values
-  * Infinity, NoN
+  * Infinity, NaN
   
   ```javascript
   -1/0
@@ -162,7 +162,7 @@ Symbol.for('a') === Symbol.for('a') // true
 ### `bigint`
 
 * unlimited integer
-* in supports basic operations `+`, `*`, `-`, `**`, `%` and bitwise operators except for `>>>`
+* in supports basic operations `+`, `*`, `-`, `/`, `**`, `%` and bitwise operators except for `>>>`
 
 ```javascript
 1234n ** 5678n
@@ -280,7 +280,7 @@ function a(flag) {
 
 * global object
     * `globalThis`
-      * `window`, `global`, 
+      * `window`, `global`
       
       ```javascript
       console.log(globalThis)
@@ -306,6 +306,7 @@ function a(flag) {
 
 * `if-else`
   * ternary operator
+  * `&&`, `||`
 * `while`
   * `continue`, `break`
   * labels
@@ -333,6 +334,9 @@ function a(flag) {
 * `for ... in`
 * `switch`
 * `try-catch-finally`
+  * `throw`
+  * exception types
+  * `Error`
 
 ## Semicolons
 
@@ -356,7 +360,7 @@ line
  */
 
 /**
- * JSDoc
+ * JSDoc; not part of the standard
  */
 function foo() {
   
@@ -367,7 +371,78 @@ function foo() {
 
 ### `console`
 
+* `log`
+  * object inspector vs. string
+  * multiple arguments
+* `debug`, `info`, `warn`, `error`
+* `trace`
+* `group(name)`, `groupEnd`
+* `count(name)`, `resetCount(name)`
+* `clear`
+* `assert(condition, ...messages)`
+* `time(name)`, `timeLog(name)`, `timeEnd(name)`
+* `table`
+
+```javascript
+console.log(
+        'hello %cred world %cregular world %clarge world',
+        `color: red; background-color: yellow;`,
+        '',
+        'font-size: large; font-family: serif; border: lime thick dashed',
+        'other messages')
+
+console.table([
+    { foo: 1, bar: 2 },
+    { foo: 3, bar: 4, baz: 5 }]) 
+
+console.group('foo group')
+console.warn('warn in group')
+console.error('error in group')
+console.groupEnd()
+
+console.time('timer 1')
+console.trace('message with stack')
+console.timeLog('timer 1', 'time logged')
+console.assert('0' === 0, 'assertion failed')
+console.timeEnd('timer 1')
+
+console.count('counter 1')
+console.count('counter 1')
+console.count('counter 1')
+```
+
 ### `debugger`
+
+* only when debugger is attached
+  * demo https://jsfiddle.net/
+
+```javascript
+console.log('foo')
+debugger
+console.log('bar')
+```
+
+## Null safety
+
+* "nullish"
+  * `null` or `undefined`
+* `?.`
+* `??`
+* `??=`
+
+```javascript
+const empty = null
+empty?.foo?.bar // null
+empty?.[foo] // null
+empty?.() // no function invoked
+
+undefined ?? 'foo' // 'foo'
+'bar' ?? 'baz' // 'baz'
+
+let a   // a = undefined
+a ??= 1 // a = 1
+a ??= 2 // a = 1
+```
 
 ## TODO 
 

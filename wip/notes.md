@@ -16,6 +16,7 @@
     * `Object.prototype.toString()`
     * Function
         * named and anonymous
+        * default arguments
         * function, constructor, method
         * `this`
             * outside function
@@ -39,9 +40,33 @@
             * function literal
             * method definition
             * `Function` constructor
+            * local functions
+              
+              ```javascript
+              function a() {
+                  console.log(a)
+                  b()
+                  console.log(a, window.a, b, window.b)
+                  function b() {
+                      console.log('b')
+                  }
+              }
+              a()
+              b()  // it fails
+              ```
+              
+              ```javascript
+              function a() {
+                  console.log('a')
+                  b()
+                  let b = 3
+                  function b() { // SyntaxError: redeclaration of let b
+                      console.log
+                  }
+              }
+              ```
         * lambdas
             * `this` not bound
-            * `void` operator
         * immediately invoked function
 * Array, collections, iterable protocol
     * `Array.isArray()`
@@ -95,6 +120,7 @@
     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
 * Java-like classes
 * modules
+  * top level named functions are global properties?
 * Binary data
 * Build-in objects
     * Object
