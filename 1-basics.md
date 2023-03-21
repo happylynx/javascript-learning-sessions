@@ -670,12 +670,32 @@ of `foo.bar().baz`?
 
 </details>
 
-## TODO 
+## Casting, type conversion
 
-* casting vs coercion
-  * https://www.w3schools.com/js/js_type_conversion.asp
-  * https://flaviocopes.com/javascript-casting/
-* equality
-  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness
+* there's no casting
+* explicit type conversion
+  * type function
+  
+    ```javascript
+    String(true)
+    String(42)
+    String(null)
+    
+    Number('42')
+    
+    Boolean(null)r
+    ```
+  * type specific ways
+  
+    ```javascript
+    + '3.14' // 3.14
+    !! null // false
+    (42).toString() // '42'
+    ```
+
 * `+`
   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Addition
+
+## Equality
+
+* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness
