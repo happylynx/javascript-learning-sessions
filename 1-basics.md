@@ -305,8 +305,45 @@ function a(flag) {
 ## Flow control
 
 * `if-else`
+
+  ```javascript
+  if (true) {
+      console.log('true branch')
+  } else {
+      console.log('branch')
+  }
+  ```
+  
   * ternary operator
+  
+  ```javascript
+  const a = foo !== null ? foo : bar
+  ```
+  
+  * `,` operator
+  
+  ```javascript
+  if (false) console.log('foo'), console.log('bar')
+  
+  const foo = 3, Math.random()
+  
+  for (let i = 0, j = 0; i < 3; i++, j+= 2) {
+  //            👆 ❌             👆 ✅
+      console.log(`i=${i} j${j}`)
+  }
+  ```
+  
   * `&&`, `||`
+
+  ```javascript
+  'foo' && 'bar' && 'baz' // 'baz'
+  'foo' && 'bar' && null && 'baz' // null
+  'foo' || 'bar' || 'baz' // 'foo'
+  null || 'foo' || 'bar' || 'baz' // 'foo'
+  (console.log('foo'), 'foo') && (console.log('bar'), 'bar') 
+  (console.log('foo'), 'foo') || (console.log('bar'), 'bar') 
+  ```
+
 * `while`
   * `continue`, `break`
   * labels
@@ -328,15 +365,141 @@ function a(flag) {
     }
     a()
     ```
+    
+    ```javascript
+    {
+      a: if (true) {
+        b: {
+          console.log('before break')
+          break a
+          console.log('after break')
+        }
+        console.log('after b block')
+      }
+      console.log('after a labeled if')
+    }
+    ```
 * `do-while`
+
+  ```javascript
+  {
+    let counter = 0
+    do {
+      counter++
+      console.log(counter)
+    } while (counter < 3)
+  }
+  ```
+
 * `for`
-  * comma operator
+
+  ```javascript
+  for (let i = 0, j = 0; i < 3; i++, j+= 2) {
+    console.log(`i=${i} j${j}`)
+  }
+  ```
+  
 * `for ... in`
+  * enumerable, string-keyed properties
+
+  ```javascript
+  for (const key in ['apple', 'orange']) {
+    console.log(`key=${key}`)
+  }
+  
+  for (const key in { foo: 'apple', bar: 'orange', [Symbol('bar')]: 'pear'}) {
+    console.log(`key=${key}`)
+  }
+
+  for (const key in console) {
+    console.log(`key=${key}`)
+  }
+  
+  for (const key in Function.prototype) {
+    console.log(`key=${key}`)
+  }
+  ```
+
+* `for ... of`
+  * iterable protocol
+    * implementing types
+      * `Array`
+      * `string`
+      * `Map` & `Set`
+      * `NodeList` (DOM type)
+  
+  ```javascript
+  for (const value of ['apple', 'orange']) {
+    console.log('value', value)
+  }
+  
+  for (const value of Object.values({ foo: 'apple', bar: 'orange', [Symbol('bar')]: 'pear'})) {
+    console.log('value', value)
+  }
+
+  for (const value of new Set(['apple', 'orange'])) {
+    console.log('value', value)
+  }
+  
+  for (const value of new Map([['apple', 'red'], ['orange', 'orange']])) {
+    console.log('value', value)
+  }
+  ```
+
+<details>
+<summary>TASK</summary>
+
+Create a function that takes single non-negative integer argument and prints two rectangles
+of stars `*` like:
+
+```
+3:
+***
+**
+*
+  *
+ **
+***
+
+5:
+*****
+****
+***
+**
+*
+    *
+   **
+  ***
+ ****
+*****
+```
+
+</details>
+
 * `switch`
 * `try-catch-finally`
   * `throw`
   * exception types
   * `Error`
+  
+  ```javascript
+  try {
+    throw 3
+    throw 'foo'
+    throw new Error('message')
+    console.log('never reached')
+  } catch (e) {
+    if (typeof e === 'string') {
+      console.error('string exception', e)
+    } else if (e instanceof Error) {
+      console.error('Error exception', e)
+    } else {
+      throw e
+    }
+  } finally {
+    console.log('finally')
+  }
+  ```
 
 ## Semicolons
 
@@ -444,8 +607,75 @@ a ??= 1 // a = 1
 a ??= 2 // a = 1
 ```
 
+<details>
+    <summary>
+TASK
+    </summary>
+
+Write in as many ways as possible an expression that returns value of `foo.bar().baz`
+if the value exists and it is not `null` or `undefined`. Return a random number otherwise.
+
+How is the answer changed if a random number should be returned instead of any "falsy" value
+of `foo.bar().baz`?
+
+```javascript
+[
+  null,
+  undefined,
+  5,
+  {},
+  { bar: "bar"},
+  { bar: {
+      baz: () => '😜'
+    }
+  },
+  {
+    bar() {
+      return { baz: 'success' }
+    }
+  },
+  {
+    bar() {
+      return { baz: function success() {return '42'}}
+    }
+  },
+  {
+    bar() {
+      return { baz: 0}
+    }
+  },
+  {
+    bar() {
+      return { baz: false}
+    }
+  },
+  {
+    bar() {
+      const result = new Boolean(false)
+      result.baz = 'success'
+      return result
+    }
+  }
+].map((foo) => ...)
+        .forEach(value => console.log(value))
+```
+
+<details>
+
+```javascript
+(typeof foo?.bar) === 'function' && foo.bar()?.baz || Math.random()
+```
+
+</details>
+
+</details>
+
 ## TODO 
 
 * casting vs coercion
+  * https://www.w3schools.com/js/js_type_conversion.asp
+  * https://flaviocopes.com/javascript-casting/
 * equality
   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness
+* `+`
+  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Addition
