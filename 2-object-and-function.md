@@ -158,6 +158,56 @@ Create an object with property `foo` that
 value % 3 is 2, value can't be read - there is no getter.
 * is enumerable only when the value is even
 
+<details>
+
+```javascript
+obj = {}
+
+Object.defineProperty(obj, 'foo', {
+  get() {
+    if (this.value % 3 === 0) {
+      return this.value
+    }
+    if (this.value % 3 === 1) {
+      return "1"
+    }
+    if (this.value % 3 === 1) {
+      return undefined
+    }
+  },
+  set(newValue) {
+    console.log('setter', newValue)
+    if (typeof newValue != 'number' || !Number.isInteger(newValue)) {
+      return
+    }
+    this.value = newValue
+    const descriptor = Object.getOwnPropertyDescriptor(this, 'foo')
+    descriptor.enumerable = (newValue % 2) === 0
+    Object.defineProperty(obj, 'foo', descriptor)
+  },
+  enumerable: true,
+  configurable: true
+})
+
+console.log(obj, obj.foo, typeof obj.foo)
+obj.foo = 0
+console.log(obj, obj.foo, typeof obj.foo)
+obj.foo = 1
+console.log(obj, obj.foo, typeof obj.foo)
+obj.foo = 2
+console.log(obj, obj.foo, typeof obj.foo)
+obj.foo = 3
+console.log(obj, obj.foo, typeof obj.foo)
+obj.foo = 4
+console.log(obj, obj.foo, typeof obj.foo)
+obj.foo = 5
+console.log(obj, obj.foo, typeof obj.foo)
+obj.foo = 6
+console.log(obj, obj.foo, typeof obj.foo)
+```
+
+</details>
+
 </details>
 
 <details>
@@ -241,8 +291,8 @@ value % 3 is 2, value can't be read - there is no getter.
     
 * `Object.freeze()`
   * effects
-  * it prevents extension
-  * object properties are non-configurable and non-writable
+    * it prevents extension
+    * object properties are non-configurable and non-writable
   * it cannot be undone
   * `Object.isFrozen()`
   
