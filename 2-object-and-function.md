@@ -450,20 +450,264 @@ Number(7)
 
 </details>
 
-<hr>
+## Object creation
 
-* creation of object
-    * literal
-    * `Object.create`
-    * `new`
-    * `Object.fromEntries()`
-    * btw. `Object.assign()`
+```javascript
+{
+    const literal = {
+        foo: 'bar'
+    }
+    console.log('literal', literal)
+    
+    const objCreate = Object.create(literal, {
+        foo: {
+            value: 'baz',
+            enumerable: true,
+            writable: true,
+            configurable: true
+        },
+        property2: {
+            value: 'value2',
+            enumerable: true,
+            writable: true,
+            configurable: true
+        }
+    })
+    console.log('objCreate', objCreate)
+    console.log('objCreate owns', Object.getOwnPropertyDescriptors(objCreate))
+    
+    function Obj() {
+        this.foo = 'bar'
+    }
+    const fromConstructor = new Obj()
+    console.log('fromConstructor', fromConstructor)
+    
+    const fromEntries = Object.fromEntries([['foo', 'bar'], ['foo', 'baz'], ['hello', 'world']])
+    console.log('fromEntries', fromEntries)
+}
+```
+
+### Bulk properties copying
+
+`Object.assign()` copies **own enumerable** properties
+
+```javascript
+{
+    const parent = {parentProperty: 'parentPropertyVaue'}
+    const source = Object.create(parent, {
+        foo: {
+            value: 'bar',
+            enumerable: true,
+            writable: true,
+            configurable: true
+        },
+        other: {
+            value: 'bar',
+            enumerable: true,
+            writable: true,
+            configurable: true
+        },
+        notEnumerable: {
+            value: 'bar',
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    })
+    console.log('source', source)
+
+    const fromAssign = Object.assign({}, source, {other: 'baz'})
+    console.log('fromAssign', fromAssign)
+}
+```
+
+TODO add a task
+
+### Object member properties
+
+* `Object.prototype.toString()`
+
+  ```javascript
+  {
+      const obj = { foo: 'bar'}
+      
+      console.log('obj', obj)
+      console.log('obj.toString', obj.toString)
+      console.log('obj.toString === Object.prototype.toString', obj.toString === Object.prototype.toString)
+      console.log('obj.toString()', obj.toString())
+      console.log('"" + obj', "" + obj)
+      
+      obj[Symbol.toStringTag] = 'custom toString tag'
+      console.log('obj.toString()', obj.toString())
+  }
+  ```
+
+## Function
+
+### Function creation
+
+```javascript
+{
+    // function literal
+    function plus(a, b) {
+        return a + b
+    }
+    plus(1, 2)
+
+    const minus = function (a, b) { 
+        return a - b
+    }
+    minus(1, 2)
+
+    // lambda, arrow function
+    const times = (a, b) => a * b
+    times(1, 2)
+
+    // constructor
+    const div = new Function('a', 'b', 'return a / b')
+    div(1, 2)
+}
+```
+
+* scope of creation
+
+  ```javascript
+  {
+      function plus(a, b) {
+          return a + b
+      }
+      console.log('globalThis.plus === plus', globalThis.plus === plus)
+  
+      function hypotenuse(a, b) {
+          // local function
+          function sq(a) {
+              return a ** 2
+          }
+          return Math.sqrt(sq(a) + sq(b))
+      }
+  
+      function leg(h, a) {
+          {
+              // local definitions are function scoped
+              function sq(a) {
+                  return a ** 2
+              }
+          }
+          return Math.sqrt(sq(h) - sq(a))
+      }
+  }
+  ```
+  
+* Argument default values
+
+  ```javascript
+  {
+      // number of declared and passed arguments doesn't need to match
+      function a(foo, bar) {
+          console.log('foo', foo, 'bar', bar)
+      }
+      console.log('a:')
+      a()
+      a(1, 2, 3)
+  
+      // referenced can only be variables on the left
+      function b(foo, bar = 8, baz = foo) {
+          console.log('foo', foo, 'bar', bar, 'baz', baz)
+      }
+      console.log('b:')
+      b()
+      b(1)
+      b(1, undefined)
+      b(1, 2)
+      b(1, 2, 3)
+  
+      function c(foo) {
+          if (foo === undefined) {
+              foo = 'def'
+          }
+          console.log('foo', foo)
+      }
+      console.log('c:')
+      c()
+  
+      const l = (foo = 8) => {
+          console.log('foo', foo)
+      }
+      console.log('l:')
+      console.log(l())
+  }
+  ```
+
+* Rest parameters
+
+  A.k.a. varargs
+
+  ```javascript
+  {
+      function a(foo, bar, ...baz) {
+          console.log('foo', foo, 'bar', bar, 'baz', baz)
+      }
+      a()
+      a(1)
+      a(1, 2)
+      a(1, 2, 3)
+      a(1, 2, 3, 4)
+  }
+  ```
+
+* Property `name`
+
+  ```javascript
+  {
+      function foo() {}
+      console.log('foo.name', foo.name)
+      
+      const bar = function() {}
+      console.log('bar.name', bar.name)
+      
+      const baz = () => {}
+      console.log('baz.name', baz.name)
+      
+      console.log('no name', (function () {}).name)
+      console.log('no name lambda', (() => {}).name)
+  }
+  ```
+
+* Property `length`
+
+  Number of declared arguments
+
+  ```javascript
+  {
+      function a() {}
+      console.log('a.length', a.length)
+  
+      function b(foo, bar) {}
+      console.log('b.length', b.length) 
+  
+      const c = (foo) => {}
+      console.log('c.length', c.length)
+  
+      console.log(((foo, bar = 8, baz) => {}).length)
+      console.log(((foo, ...bar) => {}).length)
+  }
+  ```
+  
+  * `this`
+
+  ```javascript
+  {
+      function 
+  }
+  ```
+
 * object prototype
     * chain
     * own properties, symbols
 * `Object.prototype.toString()`
 * Function
     * named and anonymous
+    * functions are first class values
     * default arguments
     * function, constructor, method
     * `this`
@@ -480,6 +724,9 @@ Number(7)
     * `Function.name`
     * `Function.prototype`
     * `Function.length`
+    * example of inheritance
+    * lambda, arrow function
+      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
     * `Object.prototype.constructor`
     * `instanceof` operator
         * `Symbol.hasInstance`
@@ -514,5 +761,5 @@ Number(7)
           }
           ```
     * lambdas
-        * `this` not bound
+        * `this` not bound, see above
     * immediately invoked function
