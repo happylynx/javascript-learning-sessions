@@ -355,7 +355,7 @@ Object.isExtensible(Object.freeze({}))
             value: 8
         } })
 
-    // creating object with specific prototype
+    // creating object with a specific prototype
     const childObj = Object.create(obj, {
         foo: {
             value: 8
@@ -521,8 +521,6 @@ Number(7)
 }
 ```
 
-TODO add a task
-
 ### Object member properties
 
 * `Object.prototype.toString()`
@@ -610,7 +608,7 @@ TODO add a task
       a()
       a(1, 2, 3)
   
-      // referenced can only be variables on the left
+      // only variables on the left can be referenced
       function b(foo, bar = 8, baz = foo) {
           console.log('foo', foo, 'bar', bar, 'baz', baz)
       }
@@ -621,6 +619,7 @@ TODO add a task
       b(1, 2)
       b(1, 2, 3)
   
+      // equivalent to assigning when undefined
       function c(foo) {
           if (foo === undefined) {
               foo = 'def'
@@ -654,6 +653,18 @@ TODO add a task
       a(1, 2, 3, 4)
   }
   ```
+  
+<details>
+<summary>Task</summary>
+
+Create a method `log()` such that
+
+* it accepts first argument `severity` of type `"debug" | "info" | "warn" | "error"`
+* followed by arbitrary number of messages that will be printed using potentially multiple calls
+  of appropriate (according to the first argument) `console` method.
+* if no message is set at call site, single message `"default message"` is assumed
+
+</details>
 
 * Property `name`
 
@@ -693,7 +704,10 @@ TODO add a task
   }
   ```
   
+<hr>
+  
   * `this`
+  
 
   ```javascript
   {
