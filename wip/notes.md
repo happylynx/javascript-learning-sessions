@@ -122,6 +122,7 @@
 * modules
   * top level named functions are global properties?
 * Binary data
+* tag string templates
 * Build-in objects
     * Object
     * Array
