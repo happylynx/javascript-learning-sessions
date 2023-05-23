@@ -448,6 +448,34 @@ Number(7)
 666
 ```
 
+<details>
+
+```javascript
+function inspect(object) {
+    if (typeof object !== 'object') {
+         throw new Error('not an object ' + object) 
+    }
+    let o = object
+    let result = []
+    while (o) {
+        result.push(Object.keys(Object.getOwnPropertyDescriptors(o)))
+        o = Object.getPrototypeOf(o)
+    }
+    return result
+}
+
+console.log(inspect(Object.create(null)))
+console.log(inspect(Object.assign(Object.create(null), { foo: 4, bar: 5 })))
+console.log(inspect(({ foo: 4, bar: 5 })))
+console.log(inspect(Object.assign(Object.create([3, 4]), { foo: 4, bar: 5 })))
+console.log(inspect(Object.assign(Object.create([3, 4]), { foo: 4, bar: 5 })))
+console.log(inspect(Object.assign(Object.create(Object.create(Object.create([3, 4]))), { foo: 'bar' })))
+console.log(inspect(Number(7)))
+console.log(inspect(666))
+```
+
+</details>
+
 </details>
 
 ## Object creation
@@ -664,6 +692,30 @@ Create a method `log()` such that
   of appropriate (according to the first argument) `console` method.
 * if no message is set at call site, single message `"default message"` is assumed
 
+<details>
+
+```javascript
+function log(severity, ...messages) {
+    const allowedSeverities = ['debug', 'info', 'warn', 'error']
+    if (!allowedSeverities.includes(severity)) {
+        throw new Error('unknown severity ' + severity)
+    }
+    if (messages.length === 0) {
+        messages.push('default message')
+    }
+    for (const message of messages) {
+        console[severity](message)
+    }
+}
+
+log('debug')
+log('error', 'baz')
+log('warn', 8, 'foo')
+log('foo')
+```
+
+</details>
+
 </details>
 
 * Property `name`
@@ -703,21 +755,126 @@ Create a method `log()` such that
       console.log(((foo, ...bar) => {}).length)
   }
   ```
-  
+
+end of previous session
 <hr>
   
-  * `this`
+### `this`
   
+TODO
 
-  ```javascript
-  {
-      function 
-  }
-  ```
+```javascript
+{
+    // outside a function or inside just a lambda
+    console.log(this === globalThis)
+    (() => console.log(this === globalThis))()
+
+    // inside a function non-strict mode
+    // if function not bound (Function.prototype.bind), bound to `undefined` or `null` -> globalThis
+    // if function bound to a primitive value -> an object wrapper of that value
+    // if function bound to an object -> that object
+    // i.e. the value is always an object
+    function foo() {
+        console.log('this in foo()', this)
+    }
+
+    foo()
+    foo.call('bar')
+    foo.call({bar: 'baz'})
+
+    // inside a function strict mode
+    // `undefined` or the bound value
+    function foo() {
+        'use strict'
+        console.log('this in foo()', this)
+    }
+
+    foo()
+    foo.call('bar')
+    foo.call({bar: 'baz'})
+
+    // inside a constructor
+    {
+        let thisFromConstructor
+
+        function Foo(label) {
+            this.label = label
+            console.log('this in foo()', this)
+            thisFromConstructor = this
+        }
+
+        const newObj = new Foo('baz');
+        console.log(newObj)
+        console.log('newObj === thisFromConstructor', newObj === thisFromConstructor)
+    }
+
+    // inside a method
+    {
+        const obj = {
+            foo() {
+                console.log('foo method', this)
+            },
+            'bar': function () {
+                console.log('foo method', this)
+            },
+            'baz': () => console.log('baz lambda', this, 'this === globalThis', this === globalThis)
+        }
+        console.log(obj)
+        console.log(obj.foo())
+        console.log(obj.bar())
+        console.log(obj.baz())
+    }
+}
+```
+
+TODO
+* scoping and this
+* it doesn't depend on function definition but rather the way function is called
+
+### Function as a constructor
+
+```javascript
+function Cat(name) {
+    console.log('constructor begin', this)
+    this.tag = "Cat " + name
+    console.log('constructor end', this)
+}
+
+{
+    const tom = new Foo('Tom')
+    console.log(tom)
+}
+```
+
+What happens:
+1. an object is created
+2. it's `[[prototype]]` property is set to `Cat.prototype`
+3. the constructor is called
+
+#### Constructor return value
+
+* don't use explicit return
+* constructor call value
+  * a primitive value or `null` returned -> `this`
+  * an object returned -> that object
+
+TODO examples
+
+### `Function.prototype`
+### `Object.prototype.constructor`
+
+
 
 * object prototype
     * chain
     * own properties, symbols
+    * separation of
+      * "instance properties" - fields, 
+      * "class properties" - methods, 
+      * "constructor properties" - static methods and fields
+      * discussion on "private properties emulation"
+        * creating function with closure
+        * `_` prefix
 * `Object.prototype.toString()`
 * Function
     * named and anonymous
@@ -738,9 +895,16 @@ Create a method `log()` such that
     * `Function.name`
     * `Function.prototype`
     * `Function.length`
+    * `Function.prototype.toString()`
     * example of inheritance
+      * bullet list on how to do it
     * lambda, arrow function
       * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
+      * differences
+        * no constructor
+        * no `yield`
+        * no `this`, `arguments`, `super`
+        * no `prototype`
     * `Object.prototype.constructor`
     * `instanceof` operator
         * `Symbol.hasInstance`
