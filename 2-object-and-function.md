@@ -761,8 +761,6 @@ end of previous session
   
 ### `this`
   
-TODO
-
 ```javascript
 {
     // outside a function or inside just a lambda
@@ -827,9 +825,59 @@ TODO
 }
 ```
 
-TODO
-* scoping and this
-* it doesn't depend on function definition but rather the way function is called
+#### Scoping of `this`
+
+```javascript
+{
+    const outsideFunctionThis = this
+    const obj = {
+        a() {
+            const aThis = this
+            const nestedObj = {
+                b() {
+                    const bThis = this
+                    console.log(outsideFunctionThis, aThis, bThis)
+                }
+            }
+            nestedObj.b()
+        }
+    }
+    obj.a()
+}
+```
+
+#### Value of `this` depends on way the function / method is called
+
+... rather than on way it's defined
+
+```javascript
+{
+    const lambda = () => this
+
+    function standaloneFunction() {
+        'use strict'
+        return this
+    }
+    
+    const obj = {
+        method() {
+            'use strict'
+            return this
+        }
+    }
+    
+    console.log(lambda(), standaloneFunction(), obj.method())
+    
+    obj.lambdaAsMethod = lambda
+    console.log('obj.lambdaAsMethod()', obj.lambdaAsMethod())
+    
+    obj.standaloneFunctionAsMethod = standaloneFunction
+    console.log('obj.standaloneFunctionAsMethod()', obj.standaloneFunctionAsMethod())
+    
+    const methodAsStandaloneFunction = obj.method
+    console.log('methodAsStandaloneFunction()', methodAsStandaloneFunction())
+}
+```
 
 ### Function as a constructor
 
@@ -849,7 +897,7 @@ function Cat(name) {
 What happens:
 1. an object is created
 2. it's `[[prototype]]` property is set to `Cat.prototype`
-3. the constructor is called
+3. the constructor is called, the new object is bound to `this`
 
 #### Constructor return value
 
@@ -858,12 +906,351 @@ What happens:
   * a primitive value or `null` returned -> `this`
   * an object returned -> that object
 
-TODO examples
+```javascript
+console.log(new (function () { this.foo = 'bar' ; return 3 })())
+console.log(new (function () { this.foo = 'bar' ; return [1, 2] })())
+```
 
-### `Function.prototype`
+#### Keyword `function` has to be used for class to be usable as a constructor
+
+* ... or keyword `class` or `new Function(string)`
+* TypeError thrown
+* functions  prototype property
+
+
+```javascript
+{
+    const lambda = () => {}
+    console.log(lambda)
+    console.log(new lambda()) // TypeError: lambda is not a constructor
+}
+{
+    const obj = {
+        a() {},
+        b: function () {}
+    }
+    console.log('o.a', o.a, 'o.b', o.b)
+    console.log('new o.b()', new o.b())
+    console.log('new o.a()', new o.a()) // TypeError: o.a is not a constructor
+}
+```
+
+### `<functionInstance>.prototype`
+
+* A property created for functions usable as constructors, i.e. defined using `function` or `class` keywords
+  or `new Function(string)`
+* It is used as a prototype of object that are constructed when the function is invoked as a constructor
+* `Object.getPrototypeOf(<functionInstance>)` vs `<functionInstance>.prototype`
+* It allows for properties shared among all instance - suitable for methods
+* Prototype of `<functionInstance>.prototype` points to the parent in inheritance hierarchy 
+
+```javascript
+function Foo() {
+    this.foo = 'Hello '
+}
+
+Foo.prototype.bar = function(name) {
+    return this.foo + name
+}
+
+{
+    const instance = new Foo()
+    console.log('instance.bar()', instance.bar())
+    
+    // Own properties vs properties from prototype
+    console.log(instance)
+    console.log('Object.hasOwn(instance, \'foo\')', Object.hasOwn(instance, 'foo'))
+    console.log('Object.hasOwn(instance, \'bar\')', Object.hasOwn(instance, 'bar'))
+    console.log(Object.getPrototypeOf(instance) === Foo.prototype)
+    console.log(Object.getPrototypeOf(Object.getPrototypeOf(instance)) === Object.prototype)
+    console.log(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(instance))) === null)
+}
+```
+
+* Change of `<functionInstance>.prototype` affects existing objects as well
+
+```javascript
+function Foo() {}
+
+{
+    const instance = new Foo()
+    console.log('before prototype altered', instance)
+    Foo.prototype.bar = function() { console.log('bar') }
+    console.log('after prototype altered', instance)
+    instance.bar()
+    ;(new Foo()).bar()
+}
+```
+
 ### `Object.prototype.constructor`
 
+* provided the object inherits from `Object`
+  * a reference to the constructor function when constructed using a constructor
+  * reference to `Object`
 
+```javascript
+console.log({}.constructor)
+
+function Foo() {}
+console.log((new Foo()).constructor)
+
+function Bar() {}
+Bar.prototype = Object.create(null)
+Bar.prototype.baz = function () {}
+console.log((new Bar()).constructor)
+```
+
+<details>
+<summary>TASK</summary>
+
+Implement [`Array.prototype.with()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/with).
+
+It's more fun in Firefox since it hasn't implemented it yet.
+
+<details>
+
+```javascript
+Array.prototype.with = function (index, value) {
+    const result = []
+    for (const val of this) {
+        result.push(val)
+    }
+    result[index] = value
+    return result
+}
+
+Array.prototype.with = function (index, value) {
+    const result = this.slice()
+    result[index] = value
+    return result
+}
+```
+
+</details>
+
+</details>
+
+### `Function.prototype.toString()`
+
+* it returns sourcecode of user defined function
+* `... [native code] ...` for standard library or runtime defined functions
+
+```javascript
+Object.prototype.hasOwnProperty.toString()
+function Foo() { console.log('bar') }
+Foo.toString()
+```
+
+### `new.target` meta-property
+
+* in function called as constructor it references the constructor function
+* otherwise `undefined`
+
+```javascript
+function foo() {
+    console.log(new.target)
+}
+
+foo()
+new foo()
+```
+
+<details>
+<summary>TASK</summary>
+
+Create a function that prints using `console.log()` the context it is called in:
+
+* `constructor`
+* `function`
+* `method`
+
+<details>
+
+```javascript
+function foo() {
+    'use strict'
+    if (new.target !== undefined) {
+        console.log('constructor')
+        return
+    }
+    if (this === undefined) {
+        console.log('function')
+        return
+    }
+    console.log('method')
+}
+
+new foo()
+foo()
+obj = { foo }
+obj.foo()
+```
+
+</details>
+
+</details>
+
+### `instanceof`
+
+* operator looking for `<functionInstance>.prototype` in object's prototype chain by default
+* customizable by `Symbol.hasInstance`
+
+```javascript
+({}) instanceof Object
+;[1] instanceof Array
+;[1] instanceof Object
+Object instanceof Function
+Object instanceof Object
+
+function Foo() {}
+;(new Foo()) instanceof Foo
+;(new Foo()) instanceof Object
+```
+
+### `Symbol.hasInstance`
+
+```javascript
+function Foo(bar) { this.bar = bar }
+
+Object.defineProperty(Foo, Symbol.hasInstance, {
+    value(instance) {
+        console.log('Foo.@@hasInstance called with', instance)
+        return (typeof instance.bar) === 'string'
+    },
+});
+
+new Foo('baz') instanceof Foo
+new Foo(8) instanceof Foo
+```
+
+<details>
+<summary>TASK</summary>
+
+Write a constructor function `Foo` that
+* creates an object `{ a: 8 }`
+* and it denies it's origin, it pretends it was created using object literal
+
+<details>
+
+```javascript
+function Foo() { this.a = 8 }
+
+Object.defineProperty(Foo, Symbol.hasInstance, {
+    value(instance) {
+        return false
+    },
+});
+
+Foo.prototype.constructor = Object
+
+console.log(new Foo(), new Foo() instanceof Foo)
+```
+
+</details>
+
+</details>
+
+### Comparison of Java & Javascript OOP primitives
+
+#### Constructor & public field
+
+Java:
+```java
+public class Foo {
+    public String bar;
+    
+    public Foo(String bar) {
+        this.bar = bar;
+    }
+}
+```
+
+Javascript
+```javascript
+function Foo(bar) {
+    this.bar = bar
+}
+```
+
+#### Public method
+
+Java:
+```java
+public class Foo {
+    public void bar() {}
+}
+```
+
+Javascript:
+```javascript
+function Foo() {}
+
+Foo.prototype.bar = function() {}
+```
+
+#### Static properties
+
+Java:
+```java
+public class Foo {
+    public static int bar = 3;
+    
+    public static int getBarPlusTwo() {
+        return Foo.bar + 2;
+    }
+}
+```
+
+Javascript:
+```javascript
+function Foo() {}
+
+Foo.prototype.bar = 3
+Foo.prototype.getBarPlusTwo = function () {
+    return Foo.prototype.bar + 2
+}
+```
+
+#### No counterpart
+
+* class visibility
+* private, protected properties
+
+<details>
+<summary>TASK</summary>
+
+Write in Javascript:
+
+```java
+public class Counter {
+    public static String COUNTER = "Counter";
+    
+    public int value;
+    
+    public Counter(int value) {
+        this.value = value;
+    }
+    
+    public void decrement() {
+        if (value < 0) {
+            throw new RuntimeException("Value is already 0");
+        }
+        this.value--;
+    }
+    
+    public String toString() {
+        return COUNTER + " " + value;
+    }
+    
+    public static Counter createTenCounter() {
+        return new Counter(10);
+    }
+}
+```
+
+</details>
+
+<hr>
 
 * object prototype
     * chain
@@ -909,6 +1296,7 @@ TODO examples
     * `instanceof` operator
         * `Symbol.hasInstance`
     * `bind`, `apply`, `call`
+      * lambda
     * creation
         * function literal
         * method definition
