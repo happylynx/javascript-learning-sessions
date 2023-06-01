@@ -755,9 +755,6 @@ log('foo')
       console.log(((foo, ...bar) => {}).length)
   }
   ```
-
-end of previous session
-<hr>
   
 ### `this`
   
@@ -1255,6 +1252,56 @@ public class Counter {
 ```
 
 </details>
+
+### Inheritance
+
+* `Object.prototype.constructor`
+* Parent constructor invocation
+  * correct value of `new.target`
+* `[[prototype]]` reference for
+  * `<functionInstance>`
+  * `<functionInstance>.prototype`
+
+```javascript
+function Shape(color) {
+    console.log("Shape() begin, new.target=", new.target)
+    this.color = color
+    console.log("Shape() end")
+}
+
+Shape.prototype.getColor = function() { return this.color }
+Shape.staticGetColor = function(instance) { return instance.color }
+
+function Circle(color, radiusM) {
+    console.log("Circle() begin, new.target=", new.target)
+    const newThis = Reflect.construct(Shape, [color], Circle)
+    newThis.radiusM = radiusM
+    console.log("Circle() end")
+    return newThis
+}
+
+Circle.prototype.getArea = function() { return 2 * Math.PI * this.radiusM ** 2 }
+
+Object.setPrototypeOf(Circle, Shape)
+Object.setPrototypeOf(Circle.prototype, Shape.prototype)
+
+{
+    const shape = new Shape("red")
+    console.log("shape colors", shape.getColor(), Shape.staticGetColor(shape))
+    console.log(shape)
+    console.log(shape instanceof Circle, shape instanceof Shape, shape instanceof Object)
+    const circle = new Circle("green", 1.5)
+    console.log("circle colors", circle.getColor(), Circle.staticGetColor(circle))
+    console.log(circle)
+    console.log(circle instanceof Circle, circle instanceof Shape, circle instanceof Object)
+}
+```
+
+### `bind`, `apply`, `call`
+
+### Lambdas
+
+### Immediately invoked function expression
 
 <hr>
 
