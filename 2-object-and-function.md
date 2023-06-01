@@ -1150,6 +1150,12 @@ console.log(new Foo(), new Foo() instanceof Foo)
 
 </details>
 
+<hr>
+
+* TODO: remind console.dir() for Chrome users
+* Symbol.hasInstance definition
+* `Symbol('foo')` vs `new Symbol('foo') // throws` 
+
 ### Comparison of Java & Javascript OOP primitives
 
 #### Constructor & public field
