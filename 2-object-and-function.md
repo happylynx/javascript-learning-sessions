@@ -1297,11 +1297,253 @@ Object.setPrototypeOf(Circle.prototype, Shape.prototype)
 }
 ```
 
+<details>
+<summary>Task</summary>
+
+Followup to task on java class `Counter`
+
+Write in Javascript:
+
+```java
+public class CustomCounter extends Counter {
+    
+    public int step;
+    
+    public CustomCounter(int value, int step) {
+        super(value);
+        this.step = step;
+    }
+    
+    public void decrement() {
+        if (value < 0) {
+            throw new RuntimeException("Value is already 0");
+        }
+        this.value -= step;
+    }
+    
+    public void decrement2() {
+        super.decrement();
+        super.decrement();
+    }
+
+    public static CustomCounter createTenCounterStepTwo() {
+        return new CustomCounter(10, 2);
+    }
+}
+```
+
+</details>
+
 ### `bind`, `apply`, `call`
+
+#### `Function.prototype.call`
+
+* It calls a function with customized `this` value
+
+```javascript
+// evaluate in context of page https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
+Array.prototype.filter.call(document.querySelectorAll('h2'), item => item.id === 'try_it')
+```
+
+Old approach to inheritance. It doesn't handle `new.target`.
+
+```javascript
+function Parent(parentField) {
+    this.parentField = parentField
+}
+
+Parent.prototype.parentMethod = function () {}
+
+function Child(parentField, childField) {
+    Parent.call(this, parentField)
+    this.childField = childField
+}
+
+Child.prototype = Object.create(Parent.prototype)
+Child.prototype.constructor = Child // Easy to forget
+
+console.log(Parent, Child, new Child(1, 2))
+```
+
+#### `Function.prototype.apply`
+
+* same as `Function.prototype.call()`, just arguments are passed as an array instead of a rest parameter
+
+```javascript
+function concatArrays(arrayA, arrayB) {
+    const result = []
+    result.push.apply(result, arrayA)
+    result.push.apply(result, arrayB)
+    return result
+}
+console.log(concatArrays([1, 2], [3, 4]))
+```
+
+#### `Function.prototype.bind`
+
+* It returns a function that has `this` and potentially first n arguments fixed
+* Resulting function doesn't allow to get back the original function
+
+```javascript
+function fn(...args) {
+    console.log('this', this)
+    console.log('args', args)
+}
+
+{
+    const bound1 = fn.bind('foo')
+    bound1(1, 2)
+    const bound2 = bound1.bind('bar')
+    bound2(1, 2)
+    const bound3 = bound2.bind('baz')
+    bound3(1, 2)
+    bound3.bind('customThis', 'a', 'b', 'c')()
+}
+```
+
+<details>
+<summary>Task</summary>
+
+Write the `curry` function (https://wiki.haskell.org/Currying).
+
+For example for function
+
+```javascript
+function f(a, b) {
+    return this + a + b
+}
+```
+
+as an input it returns approximately equivalent of
+
+```javascript
+function (toBeThis) {
+    return function(a) {
+        return function (b) {
+            return toBeThis + a + b
+        }
+    }
+}
+```
+
+</details>
 
 ### Lambdas
 
+* defined using `=>`
+* differences comparing to a function defined `function` keyword 
+  * no constructor
+  * no `yield`, no generator functions
+  * no `this`, `arguments`, `super`
+  * no `prototype`
+
+```javascript
+{
+    const filter = {
+        threshold: 4,
+        keepGreater(array) {
+            return array.filter(x => x > this.threshold)
+        }
+    }
+    console.log(filter.keepGreater([1, 2, 3, 4, 5, 6]))
+}
+```
+
 ### Immediately invoked function expression
+
+* scoping of
+  * `var` defined variables
+  * strict mode
+* prevention of pollution of the global name space
+
+```javascript
+(() => {
+    var foo = "outside"
+    ;(() => { 
+        var foo = "inside lambda"
+        console.log("foo", foo) 
+    })()
+    ;(function (){
+        var foo = "inside anonymous function"
+        console.log("foo", foo)
+    })()
+})()
+```
+
+```javascript
+(() => {
+    (() => {
+        var isStrict = true
+        eval('var isStrict = false')
+        console.log(1, isStrict)
+        ;(() => {
+            'use strict'
+            var isStrict = true
+            eval('var isStrict = false')
+            console.log(2, isStrict) // true
+            ;(() => {
+                var isStrict = true
+                eval('var isStrict = false')
+                console.log(2, isStrict) // true
+                foo()
+            })()
+        })()
+    })()
+
+    function foo() {
+        var isStrict = true
+        eval('var isStrict = false')
+        console.log('foo', isStrict) // false
+    }
+})()
+```
+
+Strict mode enabled on global level is enabled in all functions
+
+```javascript
+'use strict'
+var isStrict = true
+eval('var isStrict = false')
+console.log('global level', isStrict)
+
+;(() => {
+  var isStrict = true
+  eval('var isStrict = false')
+  console.log('in a function', isStrict) // true
+})()
+```
+
+```javascript
+(() => {
+    function sqrt(x) { return x**(1/2) }
+    window.hypotenous = function (a, b) { return sqrt(a**2 + b**2)}
+})()
+
+hypotenous(3, 4)
+```
+
+<details>
+<summary>TASK</summary>
+
+Limit scope of two subsequent definitions of variable `foo` with the thinnest possible barrier so that the snippet 
+below can be evaluated.
+
+```javascript
+let foo = "hello"
+console.log(foo)
+let foo = "world"
+console.log(foo)
+```
+
+</details>
+
+<details>
+<summary>TASK</summary>
+
+Write a global function `increment()` that takes 0 arguments and it returns an integer - how many times it was called.
+Add only the function into the global name space.
+
+</details>
 
 <hr>
 
