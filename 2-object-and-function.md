@@ -1147,12 +1147,6 @@ console.log(new Foo(), new Foo() instanceof Foo)
 
 </details>
 
-<hr>
-
-* TODO: remind console.dir() for Chrome users
-* Symbol.hasInstance definition
-* `Symbol('foo')` vs `new Symbol('foo') // throws` 
-
 ### Comparison of Java & Javascript OOP primitives
 
 #### Constructor & public field
@@ -1208,9 +1202,9 @@ Javascript:
 ```javascript
 function Foo() {}
 
-Foo.prototype.bar = 3
-Foo.prototype.getBarPlusTwo = function () {
-    return Foo.prototype.bar + 2
+Foo.bar = 3
+Foo.getBarPlusTwo = function () {
+    return Foo.bar + 2
 }
 ```
 
@@ -1250,6 +1244,39 @@ public class Counter {
     }
 }
 ```
+
+<details>
+
+```javascript
+function Counter(value) {
+    this.value = value
+}
+
+Counter.prototype.decrement = function () {
+    if (this.value < 0) {
+        throw new Error("Value is already 0")
+    }
+    this.value--
+}
+
+Counter.prototype.toString = function () {
+    return Counter.COUNTER + " " + this.value;
+}
+
+Counter.COUNTER = "Counter"
+
+Counter.createTenCounter = function() {
+    return new Counter(10)
+}
+
+{
+    const counter = Counter.createTenCounter()
+    counter.decrement()
+    console.log(counter, counter.toString())
+}
+```
+
+</details>
 
 </details>
 
@@ -1332,6 +1359,69 @@ public class CustomCounter extends Counter {
 }
 ```
 
+<details>
+
+```javascript
+
+// --- Parent class from previous task -------
+function Counter(value) {
+    this.value = value
+}
+
+Counter.prototype.decrement = function () {
+    if (this.value < 0) {
+        throw new Error("Value is already 0")
+    }
+    this.value--
+}
+
+Counter.prototype.toString = function () {
+    return Counter.COUNTER + " " + this.value;
+}
+
+Counter.COUNTER = "Counter"
+
+Counter.createTenCounter = function() {
+    return new Counter(10)
+}
+
+// --- Task solution -------------------------
+
+function CustomCounter(value, step) {
+    const newThis = Reflect.construct(Counter, [ value ], new.target)
+    newThis.step = step
+    return newThis
+}
+
+Object.setPrototypeOf(CustomCounter, Counter)
+Object.setPrototypeOf(CustomCounter.prototype, Counter.prototype)
+
+CustomCounter.prototype.decrement = function () {
+    if (this.value < 0) {
+        throw new Error("Value is already 0")
+    }
+    this.value -= this.step
+}
+
+CustomCounter.prototype.decrement2 = function () {
+    Counter.prototype.decrement.call(this)
+    Counter.prototype.decrement.call(this)
+}
+
+CustomCounter.createTenCounterStepTwo = function () {
+    return new CustomCounter(10, 2);
+}
+
+{
+    const counter = CustomCounter.createTenCounterStepTwo()
+    counter.decrement()
+    counter.decrement2()
+    console.log(counter, counter.toString())
+}
+```
+
+</details>
+
 </details>
 
 ### `bind`, `apply`, `call`
@@ -1398,6 +1488,20 @@ function fn(...args) {
     const bound3 = bound2.bind('baz')
     bound3(1, 2)
     bound3.bind('customThis', 'a', 'b', 'c')()
+}
+```
+
+* `Function.prototype.length`
+
+```javascript
+function fn(a, b) {
+    console.log('this', this)
+    console.log('args', a, b)
+}
+
+{
+    const bound = fn.bind("foo", "bar")
+    console.log(bound, bound("baz"))
 }
 ```
 
@@ -1544,83 +1648,3 @@ Write a global function `increment()` that takes 0 arguments and it returns an i
 Add only the function into the global name space.
 
 </details>
-
-<hr>
-
-* object prototype
-    * chain
-    * own properties, symbols
-    * separation of
-      * "instance properties" - fields, 
-      * "class properties" - methods, 
-      * "constructor properties" - static methods and fields
-      * discussion on "private properties emulation"
-        * creating function with closure
-        * `_` prefix
-* `Object.prototype.toString()`
-* Function
-    * named and anonymous
-    * functions are first class values
-    * default arguments
-    * function, constructor, method
-    * `this`
-        * outside function
-            * global object
-        * inside regular function
-            * strict mode / modules
-            * global object / `undefined`
-        * inside method
-            * object on which it is called
-        * inside constructor
-            * new object
-            * `new.target === fn`
-    * `Function.name`
-    * `Function.prototype`
-    * `Function.length`
-    * `Function.prototype.toString()`
-    * example of inheritance
-      * bullet list on how to do it
-    * lambda, arrow function
-      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions
-      * differences
-        * no constructor
-        * no `yield`
-        * no `this`, `arguments`, `super`
-        * no `prototype`
-    * `Object.prototype.constructor`
-    * `instanceof` operator
-        * `Symbol.hasInstance`
-    * `bind`, `apply`, `call`
-      * lambda
-    * creation
-        * function literal
-        * method definition
-        * `Function` constructor
-        * local functions
-
-          ```javascript
-          function a() {
-              console.log(a)
-              b()
-              console.log(a, window.a, b, window.b)
-              function b() {
-                  console.log('b')
-              }
-          }
-          a()
-          b()  // it fails
-          ```
-
-          ```javascript
-          function a() {
-              console.log('a')
-              b()
-              let b = 3
-              function b() { // SyntaxError: redeclaration of let b
-                  console.log
-              }
-          }
-          ```
-    * lambdas
-        * `this` not bound, see above
-    * immediately invoked function
