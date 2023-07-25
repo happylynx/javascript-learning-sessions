@@ -1472,7 +1472,12 @@ console.log(concatArrays([1, 2], [3, 4]))
 #### `Function.prototype.bind`
 
 * It returns a function that has `this` and potentially first n arguments fixed
-* Resulting function doesn't allow to get back the original function
+* resulting function doesn't allow to get back the original function
+* it can be used repeatedly - a bound function can be bind again to fix further parameters
+* returned function doesn't have `prototype` property
+* when a bound function is call as constructor
+  * bound `this` value is ignored, the newly created object is referenced instead
+  * `new.target` references the original function
 
 ```javascript
 function fn(...args) {
@@ -1495,15 +1500,17 @@ function fn(...args) {
 
 ```javascript
 function fn(a, b) {
-    console.log('this', this)
-    console.log('args', a, b)
+    console.log(`this=${this} a=${a} b=${b}`)
 }
 
 {
+    console.log(`fn.length=${fn.length}`)
     const bound = fn.bind("foo", "bar")
     console.log(bound, bound("baz"))
 }
 ```
+
+* `Function.prototype.name`
 
 <details>
 <summary>Task</summary>
@@ -1518,7 +1525,7 @@ function f(a, b) {
 }
 ```
 
-as an input it returns approximately equivalent of
+as an input `curry(f)` returns approximately equivalent of
 
 ```javascript
 function (toBeThis) {
