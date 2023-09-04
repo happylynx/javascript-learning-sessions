@@ -1431,6 +1431,32 @@ CustomCounter.createTenCounterStepTwo = function () {
 * It calls a function with customized `this` value
 
 ```javascript
+function fn(a, b) {
+    console.log('this', this, 'a', a, 'b', b)
+}
+
+fn("foo", "bar")
+{
+    const obj = { fn }
+    obj.fn("foo", "bar")
+}
+
+{
+    const obj = { baz: 8 }
+    fn.call(obj, "foo", "bar")
+}
+```
+
+```javascript
+[0, 1, 2, 3, 4].filter(number => number % 2 === 0)
+Array.prototype.filter.call([0, 1, 2, 3, 4], number => number % 2 === 0)
+// `call()` can be applied to both "functions" and "methods"
+;[].filter.call([0, 1, 2, 3, 4], number => number % 2 === 0) 
+```
+
+Application of call to an "array-like" object.
+
+```javascript
 // evaluate in context of page https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
 Array.prototype.filter.call(document.querySelectorAll('h2'), item => item.id === 'try_it')
 ```
@@ -1472,45 +1498,108 @@ console.log(concatArrays([1, 2], [3, 4]))
 #### `Function.prototype.bind`
 
 * It returns a function that has `this` and potentially first n arguments fixed
-* resulting function doesn't allow to get back the original function
-* it can be used repeatedly - a bound function can be bind again to fix further parameters
-* returned function doesn't have `prototype` property
-* when a bound function is call as constructor
-  * bound `this` value is ignored, the newly created object is referenced instead
+* Resulting function doesn't allow easily to get back the original function
+* It can be used repeatedly - a bound function can be bind again to fix further parameters
+  * `this` remains unchanged by repeated `bind()` calls
+* Returned function doesn't have `prototype` property
+* When a bound function is call as constructor
+  * Bound `this` value is ignored, the newly created object is referenced instead
   * `new.target` references the original function
 
 ```javascript
 function fn(...args) {
-    console.log('this', this)
-    console.log('args', args)
+    console.log('fn', this, ...args)
 }
 
-{
-    const bound1 = fn.bind('foo')
-    bound1(1, 2)
-    const bound2 = bound1.bind('bar')
-    bound2(1, 2)
-    const bound3 = bound2.bind('baz')
-    bound3(1, 2)
-    bound3.bind('customThis', 'a', 'b', 'c')()
-}
+fn()
+fn(1, 2, 3)
+console.log(fn.bind(1, 2, 3))
+fn.bind(1, 2, 3)(4, 5, 6)
+fn.bind(1, 2, 3).bind(4, 5, 6)()
+fn.bind(1, 2, 3).bind(4, 5, 6)(7, 8, 9)
 ```
-
-* `Function.prototype.length`
 
 ```javascript
-function fn(a, b) {
-    console.log(`this=${this} a=${a} b=${b}`)
+// in strict mode
+function strictFn() {
+    'use strict'
+    console.log('strictFn', this)
+}
+
+strictFn()
+strictFn.bind(undefined)()
+strictFn.bind(1)()
+```
+
+#### `Function.prototype.length`
+
+* number of defined arguments without default value and without rest parameter
+
+```javascript
+function fn(a, b, c = 'foo') {}
+
+console.log('fn', fn.length)
+console.log('fn.bind(1)', fn.bind(1).length)
+console.log('fn.bind(1, 2)', fn.bind(1, 2).length)
+console.log('fn.bind(1, 2, 3)', fn.bind(1, 2, 3).length)
+console.log('fn.bind(1, 2, 3, 4)', fn.bind(1, 2, 3, 4).length)
+console.log()
+console.log('fn.bind(1).bind(\'ignored\', 2)', fn.bind(1).bind('ignored', 2).length)
+console.log(
+    'fn.bind(1).bind(\'ignored\', 2).bind(\'ignored\', 3)',
+    fn.bind(1).bind('ignored', 2).bind('ignored', 3).length)
+```
+
+#### `Function.prototype.name`
+
+* Name of a function
+* For debugging, error messages, no semantic significance
+* Derived from declaration
+* non-writable, i.e. read only
+
+```javascript
+function foo() {}
+console.log(foo.name) // foo
+
+{
+    const bar = function () {}
+    console.log(bar.name) // bar
 }
 
 {
-    console.log(`fn.length=${fn.length}`)
-    const bound = fn.bind("foo", "bar")
-    console.log(bound, bound("baz"))
+    const baz = function () {}
+    console.log(baz.name) // baz
+}
+
+// try in https://jsfiddle.net/ because of CSP
+console.log(new Function().name) // anonymous
+
+console.log((() => {}).name) // empty string
+
+{
+    const obj = {
+        foo() {},
+        bar: () => {},
+        get baz() {},
+        [Symbol('symbol1')]: function() {}
+    }
+    console.log(obj.foo.name) // foo
+    console.log(obj.bar.name) // bar
+    console.log(Object.getOwnPropertyDescriptor(obj, 'baz').get.name) // get baz
+    console.log(obj[Object.getOwnPropertySymbols(obj)[0]].name)  // [symbol1]
+}
+
+{
+    class Foo {
+        static #bar() {}
+        static leakName() {
+            return Foo.#bar.name
+        }
+    }
+    console.log(Foo.name) // Foo
+    console.log(Foo.leakName()) // #bar
 }
 ```
-
-* `Function.prototype.name`
 
 <details>
 <summary>Task</summary>
