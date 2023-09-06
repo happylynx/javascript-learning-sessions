@@ -1567,7 +1567,7 @@ console.log(foo.name) // foo
 }
 
 {
-    const baz = function () {}
+    const baz = () => {}
     console.log(baz.name) // baz
 }
 
@@ -1602,19 +1602,61 @@ console.log((() => {}).name) // empty string
 ```
 
 <details>
-<summary>Task</summary>
+<summary>Task <code>curry()</code></summary>
 
-Write the `curry` function (https://wiki.haskell.org/Currying).
+Write the `curry` function (https://wiki.haskell.org/Currying, 
+https://hackage.haskell.org/package/base-4.18.0.0/docs/Prelude.html#v:curry) that allows for gradual application
+of arguments of a two argument function.
+
+It should hold that
+
+```javascript
+function fn(p1, p2) { ... }
+
+fn(a, b) === curry(fn)(a)(b)
+```
+
+Try with
+
+```javascript
+function fn(a, b) {
+    return a + b
+}
+```
+
+<details>
+<summary>Solution</summary>
+
+```javascript
+function curry(f) {
+    return function (a) {
+        return function (b) {
+            return f(a, b)
+        }
+    }
+}
+
+fn(1, 2) === curry(fn)(1)(2)
+```
+
+</details>
+
+</details>
+
+<details>
+<summary>Task <code>curryN()</code></summary>
+
+Write an `curryN(fn)` that allows to gradually apply `this` followed by `fn.length` arguments. 
 
 For example for function
 
 ```javascript
-function f(a, b) {
+function fn(a, b) {
     return this + a + b
 }
 ```
 
-as an input `curry(f)` returns approximately equivalent of
+as an input `curryN(fn)` returns approximately equivalent of
 
 ```javascript
 function (toBeThis) {
@@ -1626,16 +1668,41 @@ function (toBeThis) {
 }
 ```
 
+<details>
+<summary>Solution</summary>
+
+```javascript
+function curryN(fn) {
+    const thisAndArguments = []
+    const numberOfValuesToGather = 1 + fn.length
+  
+    function storeAndCall(arg) {
+        thisAndArguments.push(arg)
+        if (thisAndArguments.length < numberOfValuesToGather) {
+            return storeAndCall
+        }
+        return fn.apply(thisAndArguments[0], thisAndArguments.slice(1))
+    }
+    
+    return storeAndCall
+}
+
+console.log(fn.call(1, 2, 3))
+console.log(curryN(fn)(1)(2)(3))
+```
+
+</details>
+
 </details>
 
 ### Lambdas
 
 * defined using `=>`
 * differences comparing to a function defined `function` keyword 
-  * no constructor
+  * can't be used as constructor
   * no `yield`, no generator functions
   * no `this`, `arguments`, `super`
-  * no `prototype`
+  * no `prototype` property
 
 ```javascript
 {
@@ -1667,34 +1734,29 @@ function (toBeThis) {
         var foo = "inside anonymous function"
         console.log("foo", foo)
     })()
+    {
+        console.log("foo", foo)
+    }
 })()
 ```
 
 ```javascript
 (() => {
-    (() => {
-        var isStrict = true
-        eval('var isStrict = false')
-        console.log(1, isStrict)
-        ;(() => {
-            'use strict'
-            var isStrict = true
-            eval('var isStrict = false')
-            console.log(2, isStrict) // true
-            ;(() => {
-                var isStrict = true
-                eval('var isStrict = false')
-                console.log(2, isStrict) // true
-                foo()
-            })()
-        })()
+  (() => {
+    console.log(1, (function () { return !this})()) // false
+    ;(() => {
+      'use strict'
+      console.log(2, (function () { return !this})()) // true
+      ;(() => {
+        console.log(3, (function () { return !this})()) // true
+        foo()
+      })()
     })()
+  })()
 
-    function foo() {
-        var isStrict = true
-        eval('var isStrict = false')
-        console.log('foo', isStrict) // false
-    }
+  function foo() {
+    console.log('foo', (function () { return !this})()) // false
+  }
 })()
 ```
 
@@ -1704,7 +1766,7 @@ Strict mode enabled on global level is enabled in all functions
 'use strict'
 var isStrict = true
 eval('var isStrict = false')
-console.log('global level', isStrict)
+console.log('global level', isStrict) // true
 
 ;(() => {
   var isStrict = true
@@ -1712,6 +1774,9 @@ console.log('global level', isStrict)
   console.log('in a function', isStrict) // true
 })()
 ```
+
+Auxiliary function `sqrt()` doesn't leak into the global namespace. Used mainly before Javascript modules were
+introduced.
 
 ```javascript
 (() => {
@@ -1740,7 +1805,22 @@ console.log(foo)
 <details>
 <summary>TASK</summary>
 
-Write a global function `increment()` that takes 0 arguments and it returns an integer - how many times it was called.
+Write a global function `increment()` that takes 0 arguments, and it returns an integer - how many times it was called.
 Add only the function into the global name space.
+
+<details>
+<summary>Solution</summary>
+
+```javascript
+(() => {
+    let counter = 0
+    globalThis.increment = () => ++counter
+})()
+console.log(increment())
+console.log(increment())
+console.log(increment())
+```
+
+</details>
 
 </details>
