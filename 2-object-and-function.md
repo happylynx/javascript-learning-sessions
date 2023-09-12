@@ -1360,6 +1360,7 @@ public class CustomCounter extends Counter {
 ```
 
 <details>
+<summary>Solution</summary>
 
 ```javascript
 
@@ -1511,12 +1512,12 @@ function fn(...args) {
     console.log('fn', this, ...args)
 }
 
-fn()
-fn(1, 2, 3)
-console.log(fn.bind(1, 2, 3))
-fn.bind(1, 2, 3)(4, 5, 6)
-fn.bind(1, 2, 3).bind(4, 5, 6)()
-fn.bind(1, 2, 3).bind(4, 5, 6)(7, 8, 9)
+fn() // Window
+fn(1, 2, 3) // Window 1 2 3
+console.log(fn.bind(1, 2, 3)) // BoundFunctionObject 
+fn.bind(1, 2, 3)(4, 5, 6) // Number{1} 2 3 4 5 6
+fn.bind(1, 2, 3).bind(4, 5, 6)() // Number{1} 2 3 5 6
+fn.bind(1, 2, 3).bind(4, 5, 6)(7, 8, 9) // Number{1} 2 3 5 6 7 8 9
 ```
 
 ```javascript
@@ -1526,9 +1527,9 @@ function strictFn() {
     console.log('strictFn', this)
 }
 
-strictFn()
-strictFn.bind(undefined)()
-strictFn.bind(1)()
+strictFn()                  // undefined
+strictFn.bind(undefined)()  // undefined
+strictFn.bind(1)()          // 1
 ```
 
 #### `Function.prototype.length`
@@ -1538,16 +1539,16 @@ strictFn.bind(1)()
 ```javascript
 function fn(a, b, c = 'foo') {}
 
-console.log('fn', fn.length)
-console.log('fn.bind(1)', fn.bind(1).length)
-console.log('fn.bind(1, 2)', fn.bind(1, 2).length)
-console.log('fn.bind(1, 2, 3)', fn.bind(1, 2, 3).length)
-console.log('fn.bind(1, 2, 3, 4)', fn.bind(1, 2, 3, 4).length)
+console.log('fn', fn.length)                                          // 2
+console.log('fn.bind(1)', fn.bind(1).length)                          // 2
+console.log('fn.bind(1, 2)', fn.bind(1, 2).length)                    // 1
+console.log('fn.bind(1, 2, 3)', fn.bind(1, 2, 3).length)              // 0
+console.log('fn.bind(1, 2, 3, 4)', fn.bind(1, 2, 3, 4).length)        // 0
 console.log()
-console.log('fn.bind(1).bind(\'ignored\', 2)', fn.bind(1).bind('ignored', 2).length)
+console.log('fn.bind(1).bind(\'ignored\', 2)', fn.bind(1).bind('ignored', 2).length)  // 1
 console.log(
     'fn.bind(1).bind(\'ignored\', 2).bind(\'ignored\', 3)',
-    fn.bind(1).bind('ignored', 2).bind('ignored', 3).length)
+    fn.bind(1).bind('ignored', 2).bind('ignored', 3).length)                          // 0
 ```
 
 #### `Function.prototype.name`
@@ -1712,7 +1713,7 @@ console.log(curryN(fn)(1)(2)(3))
             return array.filter(x => x > this.threshold)
         }
     }
-    console.log(filter.keepGreater([1, 2, 3, 4, 5, 6]))
+    console.log(filter.keepGreater([1, 2, 3, 4, 5, 6])) // [ 5, 6 ]
 }
 ```
 
@@ -1764,14 +1765,10 @@ Strict mode enabled on global level is enabled in all functions
 
 ```javascript
 'use strict'
-var isStrict = true
-eval('var isStrict = false')
-console.log('global level', isStrict) // true
+console.log('global level', (function () { return !this})()) // true
 
 ;(() => {
-  var isStrict = true
-  eval('var isStrict = false')
-  console.log('in a function', isStrict) // true
+  console.log('in a function', (function () { return !this})()) // true
 })()
 ```
 
@@ -1816,9 +1813,9 @@ Add only the function into the global name space.
     let counter = 0
     globalThis.increment = () => ++counter
 })()
-console.log(increment())
-console.log(increment())
-console.log(increment())
+console.log(increment())  // 1
+console.log(increment())  // 2
+console.log(increment())  // 3
 ```
 
 </details>
