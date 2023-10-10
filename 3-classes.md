@@ -53,3 +53,9 @@
 * in constructor `super()` has to be called before `this` keyword can be used
 * even if parent class has a constructor with parameters defined, child class doesn't have to explicitly declare
   a constructor
+
+___
+
+## TODO DELETE, Resources
+
+* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes
