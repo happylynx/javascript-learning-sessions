@@ -1,0 +1,1 @@
+console.log('regular', (function () { return !this})())
