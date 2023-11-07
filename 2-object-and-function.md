@@ -253,8 +253,8 @@ value % 3 is 2, value can't be read - there is no getter.
     
 * `Object.freeze()`
   * effects
-  * it prevents extension
-  * object properties are non-configurable and non-writable
+    * it prevents extension
+    * object properties are non-configurable and non-writable
   * it cannot be undone
   * `Object.isFrozen()`
   
