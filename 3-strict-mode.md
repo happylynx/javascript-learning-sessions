@@ -327,6 +327,44 @@ function f() {
 f()
 ```
 
+<details>
+<summary>Task</summary>
+
+Write a function `printStack()` that prints stacktrace 
+* one line per frame in form `<function-name>` or `<function-instance>` followed by arguments passed into the function
+* the latest frame first
+
+Verify using snippet:
+
+```javascript
+function g(item, index, array) {
+    printStack()
+}
+
+function f(p1, p2) {
+    [1].forEach(g)
+}
+
+f('foo', 'bar')
+```
+
+<details>
+<summary>Solution</summary>
+
+```javascript
+function printStack() {
+  let fn = arguments.callee
+  while (fn !== null) {
+    console.log(fn, fn.arguments)
+    fn = fn.caller
+  }
+}
+```
+
+</details>
+
+</details>
+
 ### New reserved words
 
 * can't be used as variable names
@@ -351,8 +389,8 @@ let package = 8 // throws in strict mode
 <details>
 <summary>Task</summary>
 
-Pick 3 described differences between strict mode and sloppy mode and use them to write expressions
-testing if the code is running in strict mode. The expression should evaluate to `true` if and only if
+Pick coupe of described differences between strict mode and sloppy mode. For each difference write an expression
+testing if code is running in strict mode. The expression should evaluate to `true` if and only if
 it is evaluated in strict mode.
 
 </details>
