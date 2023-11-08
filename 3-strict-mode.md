@@ -1,8 +1,5 @@
 # Strict mode
 
-<!-- TODO remove -->
-https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
-
 ## What is strict mode
 
 * Set of opt-in language restrictions to fix design flaws 
@@ -209,6 +206,7 @@ f('bar', 'baz')
   
 * character
 
+// TODO fix
   ```javascript
   // 'use strict'
   console.log(0o101, 0x41, 65)
@@ -229,8 +227,10 @@ console.log(true)
 * it used to be forbidden in strict mode, it's not anymore since ES2015 
 
 ```javascript
-const obj = { foo: "bar", foo: "baz" }
-console.log(obj)
+{
+    const obj = {foo: "bar", foo: "baz"}
+    console.log(obj)
+}
 ```
 
 ### `with` prohibited
@@ -348,6 +348,12 @@ function f(p1, p2) {
 f('foo', 'bar')
 ```
 
+Notes:
+
+* `Error.prototype.stack` is suitable for practical applications
+* Chrome base implementations refuses to return the lowest stack frame
+* Builtin functions like `Array.prototype.forEach()` are not shown in the `Function.caller` based stack
+
 <details>
 <summary>Solution</summary>
 
@@ -379,7 +385,6 @@ protected
 public
 static
 yield
-
 ```
 
 ```javascript
@@ -392,5 +397,12 @@ let package = 8 // throws in strict mode
 Pick coupe of described differences between strict mode and sloppy mode. For each difference write an expression
 testing if code is running in strict mode. The expression should evaluate to `true` if and only if
 it is evaluated in strict mode.
+
+<details>
+<summary>Solution</summary>
+
+[//]: # (TODO)
+
+</details>
 
 </details>
